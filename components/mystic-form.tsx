@@ -19,6 +19,7 @@ type Step =
     | "q6_future"
     | "q7_whynow"
     | "calculating"
+    | "diagnosis"
     | "teaser"
     | "payment"
     | "success";
@@ -49,6 +50,8 @@ const BACK_MAP: Partial<Record<Step, Step>> = {
     q5_energy: "q4_coping",
     q6_future: "q5_energy",
     q7_whynow: "q6_future",
+    teaser: "diagnosis",
+    payment: "teaser",
 };
 
 const calculateZodiac = (year: number) => {
@@ -95,6 +98,9 @@ export default function MysticForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [aiReading, setAiReading] = useState<string[] | null>(null);
     const [apiError, setApiError] = useState<string | null>(null);
+
+    // Calculation State
+    const [calculationMessage, setCalculationMessage] = useState("");
 
     // Urgency Timer State
     const [timeLeft, setTimeLeft] = useState(15 * 60);
@@ -178,9 +184,30 @@ export default function MysticForm() {
         setReadingData({ animal: zodiac.animal, element: zodiac.element, lifePath });
 
         setStep("calculating");
+
+        // Dynamic calculation messages sequence
+        const messages = [
+            "Таны одон орны зураглалыг боловсруулж байна...",
+            `${zodiac.animal} жилийн энергийн урсгалыг тооцоолж байна...`,
+            "Таны үйлийн үрийн хэв маягийг шинжилж байна...",
+            "2026 оны гол шилжилтүүдийг тодорхойлж байна...",
+            "Таны далд авьяас чадварын кодыг тайлж байна..."
+        ];
+
+        let msgIndex = 0;
+        setCalculationMessage(messages[0]);
+
+        const interval = setInterval(() => {
+            msgIndex++;
+            if (msgIndex < messages.length) {
+                setCalculationMessage(messages[msgIndex]);
+            }
+        }, 1200);
+
         setTimeout(() => {
-            setStep("teaser");
-        }, 5500);
+            clearInterval(interval);
+            setStep("diagnosis");
+        }, 6000);
     };
 
     const handleGenerateReading = useCallback(async () => {
@@ -480,45 +507,77 @@ export default function MysticForm() {
                     <div className="flex flex-col items-center space-y-6 pt-4">
                         <div className="w-16 h-16 rounded-full border-2 border-primary/30 border-t-primary animate-spin"></div>
                         <div className="text-center space-y-3">
-                            <p className="text-primary font-serif font-medium">9 түвшний алгоритмыг тооцоолж байна...</p>
+                            <p className="text-primary font-serif font-medium animate-pulse">{calculationMessage}</p>
                             <p className="text-foreground/40 text-sm font-serif">Таны мэдээллийг боловсруулж байна...</p>
                         </div>
                     </div>
                 );
 
+            case "diagnosis":
+                return (
+                    <div className="space-y-6 text-left animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="text-center mb-6">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10 text-destructive mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            </div>
+                            <h2 className="text-xl font-serif text-primary font-semibold">ОНОШИЛГОО: ТАНЫ ЭНЕРГИЙН УРСГАЛ ТҮГЖИГДСЭН БАЙНА</h2>
+                        </div>
+
+                        <div className="space-y-4 font-serif text-foreground/80 leading-relaxed">
+                            <p>
+                                <span className="font-semibold text-primary">{name}</span>, та одоогоор өөрийн нөөц бололцооны дөнгөж <span className="text-destructive font-bold">30%-ийг</span> л ашиглаж байна.
+                            </p>
+                            <p>
+                                Учир нь таны <span className="font-semibold text-primary">{readingData?.animal}</span> жилийн төрөлхийн энерги таны одоогийн хэвшмэл амьдралын хэмнэлтэй идэвхтэй зөрчилдөж байна.
+                            </p>
+                            <p className="bg-destructive/5 p-4 rounded-lg border-l-2 border-destructive text-sm italic text-foreground/70">
+                                "Та сүнслэг ядаргааг (spiritual burnout) зөвхөн бие махбодийн амралтаар эмчлэх гэж оролдож байна. Энэ бол буруу эмчилгээ."
+                            </p>
+                        </div>
+
+                        <Button
+                            onClick={() => setStep("teaser")}
+                            className="w-full mt-6 h-12 text-md font-serif font-semibold animate-pulse"
+                        >
+                            Шийдлийг харах &rarr;
+                        </Button>
+                    </div>
+                );
+
             case "teaser":
                 return (
-                    <div className="space-y-6 text-left">
+                    <div className="space-y-6 text-left animate-in fade-in duration-700">
                         <div className="text-center mb-6">
-                            <h2 className="text-2xl font-serif text-primary">{name}</h2>
-                            <p className="hero-gradient-text mt-1 font-serif tracking-wide uppercase text-sm">
-                                {readingData?.animal} жил, {readingData?.element} махбодь
+                            <h2 className="text-xl font-serif text-primary leading-snug">
+                                {name}, 2026 онд таны санхүүгийн гацалт арилж, энерги сэргэх <span className="hero-gradient-text font-bold">ЯГ НОЦТОЙ ӨДРҮҮДИЙГ</span> тооцооллоо.
+                            </h2>
+                            <p className="text-foreground/40 text-xs mt-2 font-serif uppercase tracking-widest">
+                                {readingData?.animal} жил • {readingData?.element} махбодь • Амьдралын зам #{readingData?.lifePath}
                             </p>
-                            <p className="text-foreground/40 text-xs mt-1 font-serif">Амьдралын зам: {readingData?.lifePath}</p>
                         </div>
 
                         <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-xl space-y-3">
                             <h3 className="text-xs uppercase tracking-wider text-destructive font-semibold font-serif flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-destructive" /> ОНОШИЛГОО: СҮНСЛЭГ BURN-OUT
+                                <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" /> ИЛЭРСЭН АСУУДАЛ: {q3.toUpperCase().split(" ").slice(0, 3).join(" ")}...
                             </h3>
                             <p className="text-foreground/70 leading-relaxed text-[15px] font-serif">
-                                {name}, таны <span className="font-semibold text-foreground">&quot;{q1.toLowerCase()}&quot;</span> гэж мэдэрч, амьдралынхаа <span className="font-semibold text-foreground">&quot;{q3.toLowerCase()}&quot;</span> хамгийн их гацалттай байгаагаа хэлсэн чинь санамсаргүй зүйл биш. Бид таны 7 хариулт болон төрсөн өдрийг алгоритмаар шалгахад 2026 оны Гал Морин жилийн хүчтэй хэмнэл таны одоогийн үйлдлүүдтэй <span className="text-destructive font-medium">ноцтой зөрчилдөж байна.</span>
+                                Бид таны Vocation Sector буюу "Хувь заяаны зурвас"-т ноцтой бөглөрөл үүссэнийг илрүүллээ. Таны <span className="font-semibold text-foreground">&quot;{q1.toLowerCase()}&quot;</span> гэсэн мэдрэмж бол зүгээр нэг ядаргаа биш.
                             </p>
-                            <p className="text-foreground/50 leading-relaxed text-sm font-serif">
-                                Та <span className="font-medium text-foreground/70">&quot;{q6.toLowerCase()}&quot;</span> гэдгээ мэдсээр байж өөрийнхөө боломжийн дөнгөж {q2.match(/\d+-\d+%/)?.[0] || "багахан хувийг"} ашиглан амьдарч байгаа нь таны буруу биш, энэ бол зөвхөн одон орны энергийн буруу хуваарилалт юм.
+                            <p className="text-foreground/70 leading-relaxed text-[15px] font-serif">
+                                Энэ бол таны дотоод энерги 2026 оны шилжилтийн үетэй зохицохгүй, "хүчээр" ажиллаж байгаагийн дохио юм. Хэрэв үүнийг яг одоо засахгүй бол {readingData?.animal} жилийн эрч хүч таныг улам туйлдуулж болзошгүй.
                             </p>
                         </div>
 
                         <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-b from-primary/5 to-transparent p-1">
                             <div className="absolute inset-0 bg-card/95 z-10 flex flex-col items-center justify-center p-6 text-center border border-primary/15 rounded-xl">
-                                <div className="mb-3 text-primary">
+                                <div className="mb-3 text-primary animate-bounce">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                                 </div>
                                 <h4 className="text-primary font-serif font-semibold text-lg flex items-center gap-2">
-                                    Шийдэл: Хэмнэлийг Засах
+                                    Шийдэл Бэлэн Байна
                                 </h4>
                                 <p className="text-foreground/40 text-sm mt-2 mb-4 font-serif">
-                                    Энэ гацалтаас гарах гарц буюу таны 2026 оны алтан боломжуудын нарийвчилсан 3 хэсэгт анализ.
+                                    Зөвхөн танд зориулсан 2026 оны хувийн зураглал, засал, болон өдрүүдийн хуваарь.
                                 </p>
 
                                 <Button
@@ -526,9 +585,9 @@ export default function MysticForm() {
                                         setStep("payment");
                                         setTimeLeft(15 * 60);
                                     }}
-                                    className="w-full font-bold font-serif text-[15px]"
+                                    className="w-full font-bold font-serif text-[15px] h-12 shadow-lg shadow-primary/20"
                                 >
-                                    ✦ Тийм, би гацаанаас гармаар байна
+                                    Тийм, би гацаанаас гармаар байна — 5,000₮
                                 </Button>
                             </div>
 
@@ -546,13 +605,16 @@ export default function MysticForm() {
 
             case "payment":
                 return (
-                    <div className="space-y-6 text-left">
+                    <div className="space-y-6 text-left animate-in fade-in duration-500">
                         <div className="text-center">
-                            <h2 className="text-2xl font-serif text-primary mb-2">Хувийн Зурхайгаа Авах</h2>
-                            <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive text-xs font-semibold px-3 py-1.5 rounded-full border border-destructive/20 uppercase tracking-widest mt-1 font-serif">
+                            <h2 className="text-2xl font-serif text-primary mb-2">Gemini Engine™ Тооцоолол</h2>
+                            <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive text-xs font-semibold px-3 py-1.5 rounded-full border border-destructive/20 uppercase tracking-widest mt-1 font-serif animate-pulse">
                                 <span className="w-2 h-2 rounded-full bg-destructive" />
-                                Уншлага устгагдах хугацаа: {formatTime(timeLeft)}
+                                Цонх хаагдахад: {formatTime(timeLeft)}
                             </div>
+                            <p className="text-foreground/40 text-xs mt-3 leading-relaxed max-w-[90%] mx-auto font-serif">
+                                Таны хувийн тохируулгын цонх нээлттэй байна. Gemini Engine-ийн нөөц хязгаарлагдмал тул энэхүү нарийвчилсан уншлага нь зөвхөн дараагийн 15 минутын турш хадгалагдана.
+                            </p>
                         </div>
 
                         <div className="bg-card/60 border border-primary/15 rounded-xl p-6 flex flex-col items-center space-y-6">

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState } from "react";
 import { Sparkles, ArrowRight, Loader2, BookOpen } from "lucide-react";
 
@@ -45,10 +46,10 @@ export default function NameDestinyArticle() {
 
             <main className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-32">
                 {/* Back Link */}
-                <a href="/" className="inline-flex items-center text-primary/60 hover:text-primary text-sm tracking-widest uppercase mb-12 transition-colors">
+                <Link href="/" className="inline-flex items-center text-primary/60 hover:text-primary text-sm tracking-widest uppercase mb-12 transition-colors">
                     <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
                     Нүүр хуудас
-                </a>
+                </Link>
 
                 {/* Article Header */}
                 <header className="mb-20 pb-12 border-b border-border/60">
@@ -158,13 +159,13 @@ export default function NameDestinyArticle() {
                                     <p className="text-center text-sm text-foreground/50 mb-4">
                                         Энэ бол таны талаарх мэдээллийн ердөө <span className="text-primary font-semibold">5%</span> юм.
                                     </p>
-                                    <a
+                                    <Link
                                         href="/#zurhai-form"
                                         className="w-full py-4 bg-foreground text-background font-bold uppercase tracking-widest text-sm rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors flex items-center justify-center"
                                     >
                                         Бүрэн зурхайгаа бодуулах
                                         <ArrowRight className="w-4 h-4 ml-2" />
-                                    </a>
+                                    </Link>
                                     <button
                                         onClick={() => { setResult(null); setName(""); }}
                                         className="w-full mt-4 py-2 text-xs text-foreground/40 hover:text-foreground/70 uppercase tracking-widest transition-colors"

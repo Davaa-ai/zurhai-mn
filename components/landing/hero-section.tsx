@@ -1,6 +1,84 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import Link from 'next/link';
+
+interface Config {
+    particleCount: number;
+    particleColor: string;
+    lineColor: string;
+    particleRadius: number;
+    maxLineDistance: number;
+    mouseAttractRadius: number;
+    mouseAttractForce: number;
+    baseSpeed: number;
+}
+
+interface Mouse {
+    x: number | null;
+    y: number | null;
+}
+
+// Particle Class moved outside component
+class Particle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    baseX: number;
+    baseY: number;
+    canvas: HTMLCanvasElement;
+    config: Config;
+
+    constructor(canvas: HTMLCanvasElement, config: Config) {
+        this.canvas = canvas;
+        this.config = config;
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * config.baseSpeed;
+        this.vy = (Math.random() - 0.5) * config.baseSpeed;
+        this.baseX = this.x;
+        this.baseY = this.y;
+    }
+
+    update(mouse: Mouse) {
+        if (mouse.x != null && mouse.y != null) {
+            const dx = mouse.x - this.x;
+            const dy = mouse.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < this.config.mouseAttractRadius) {
+                const forceDirectionX = dx / distance;
+                const forceDirectionY = dy / distance;
+                const force = (this.config.mouseAttractRadius - distance) / this.config.mouseAttractRadius;
+
+                this.vx += forceDirectionX * force * this.config.mouseAttractForce;
+                this.vy += forceDirectionY * force * this.config.mouseAttractForce;
+            }
+        }
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        this.vx *= 0.99;
+        this.vy *= 0.99;
+
+        if (Math.abs(this.vx) < this.config.baseSpeed) this.vx += (Math.random() - 0.5) * 0.05;
+        if (Math.abs(this.vy) < this.config.baseSpeed) this.vy += (Math.random() - 0.5) * 0.05;
+
+        if (this.x < 0) this.x = this.canvas.width;
+        if (this.x > this.canvas.width) this.x = 0;
+        if (this.y < 0) this.y = this.canvas.height;
+        if (this.y > this.canvas.height) this.y = 0;
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.config.particleRadius, 0, Math.PI * 2);
+        ctx.fillStyle = this.config.particleColor;
+        ctx.fill();
+    }
+}
 
 const HeroSection = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,7 +93,7 @@ const HeroSection = () => {
         let animationFrameId: number;
 
         // Configuration — Light theme: navy/gold particles on ivory
-        const config = {
+        const config: Config = {
             particleCount: 120,
             particleColor: 'rgba(15, 27, 61, 0.25)',       // Navy dots
             lineColor: 'rgba(184, 149, 47, ',               // Gold lines, opacity dynamic
@@ -27,7 +105,7 @@ const HeroSection = () => {
         };
 
         let particles: Particle[] = [];
-        let mouse = { x: null as number | null, y: null as number | null };
+        const mouse: Mouse = { x: null, y: null };
 
         // Resize handler
         const resizeCanvas = () => {
@@ -35,69 +113,11 @@ const HeroSection = () => {
             canvas.height = window.innerHeight;
         };
 
-        // Particle Class
-        class Particle {
-            x: number;
-            y: number;
-            vx: number;
-            vy: number;
-            baseX: number;
-            baseY: number;
-
-            constructor() {
-                this.x = Math.random() * canvas!.width;
-                this.y = Math.random() * canvas!.height;
-                this.vx = (Math.random() - 0.5) * config.baseSpeed;
-                this.vy = (Math.random() - 0.5) * config.baseSpeed;
-                this.baseX = this.x;
-                this.baseY = this.y;
-            }
-
-            update() {
-                if (mouse.x != null && mouse.y != null) {
-                    const dx = mouse.x - this.x;
-                    const dy = mouse.y - this.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < config.mouseAttractRadius) {
-                        const forceDirectionX = dx / distance;
-                        const forceDirectionY = dy / distance;
-                        const force = (config.mouseAttractRadius - distance) / config.mouseAttractRadius;
-
-                        this.vx += forceDirectionX * force * config.mouseAttractForce;
-                        this.vy += forceDirectionY * force * config.mouseAttractForce;
-                    }
-                }
-
-                this.x += this.vx;
-                this.y += this.vy;
-
-                this.vx *= 0.99;
-                this.vy *= 0.99;
-
-                if (Math.abs(this.vx) < config.baseSpeed) this.vx += (Math.random() - 0.5) * 0.05;
-                if (Math.abs(this.vy) < config.baseSpeed) this.vy += (Math.random() - 0.5) * 0.05;
-
-                if (this.x < 0) this.x = canvas!.width;
-                if (this.x > canvas!.width) this.x = 0;
-                if (this.y < 0) this.y = canvas!.height;
-                if (this.y > canvas!.height) this.y = 0;
-            }
-
-            draw() {
-                if (!ctx) return;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, config.particleRadius, 0, Math.PI * 2);
-                ctx.fillStyle = config.particleColor;
-                ctx.fill();
-            }
-        }
-
         const init = () => {
             resizeCanvas();
             particles = [];
             for (let i = 0; i < config.particleCount; i++) {
-                particles.push(new Particle());
+                particles.push(new Particle(canvas, config));
             }
         };
 
@@ -107,8 +127,8 @@ const HeroSection = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             particles.forEach(p => {
-                p.update();
-                p.draw();
+                p.update(mouse);
+                p.draw(ctx);
             });
 
             for (let i = 0; i < particles.length; i++) {
@@ -196,17 +216,17 @@ const HeroSection = () => {
                     Огторгуйн уудмыг математик нарийвчлалаар тайлах нь. Гараг эрхсийн байрлал, оддын огтлолцол дээр суурилсан таны хувь төөргийн алгоритм.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pointer-events-auto items-center justify-center">
-                    <a href="#zurhai-form" className="px-8 py-3 bg-primary text-primary-foreground font-serif font-semibold rounded-full hover:bg-primary/90 transition-colors duration-300 tracking-wide inline-flex">
+                    <Link href="#zurhai-form" className="px-8 py-3 bg-primary text-primary-foreground font-serif font-semibold rounded-full hover:bg-primary/90 transition-colors duration-300 tracking-wide inline-flex">
                         ✦ Хувь төөргөө тооцоолох
-                    </a>
-                    <a href="#zodiac-signs" className="px-8 py-3 bg-transparent border border-foreground/15 text-foreground/60 font-serif font-semibold rounded-full hover:border-primary/40 hover:text-primary transition-colors duration-300 inline-flex">
+                    </Link>
+                    <Link href="#zodiac-signs" className="px-8 py-3 bg-transparent border border-foreground/15 text-foreground/60 font-serif font-semibold rounded-full hover:border-primary/40 hover:text-primary transition-colors duration-300 inline-flex">
                         Оддын зүй тогтол
-                    </a>
+                    </Link>
                 </div>
                 <div className="mt-8 pointer-events-auto">
-                    <a href="/blog/neriin-utga" className="inline-flex items-center text-sm md:text-base text-primary/50 hover:text-primary transition-colors font-serif italic border-b border-transparent hover:border-primary/30 pb-0.5">
+                    <Link href="/blog/neriin-utga" className="inline-flex items-center text-sm md:text-base text-primary/50 hover:text-primary transition-colors font-serif italic border-b border-transparent hover:border-primary/30 pb-0.5">
                         <span className="mr-2">✨</span> Таны нэр ямар далд утгатай вэ? Сая хүний нууц... <span className="ml-1 text-xs">→</span>
-                    </a>
+                    </Link>
                 </div>
             </div>
 

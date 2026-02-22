@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function FeaturesSection() {
     const features = [
         {
@@ -49,11 +51,12 @@ export default function FeaturesSection() {
                             <div className="absolute inset-x-6 top-0 h-0.5 bg-primary opacity-0 group-hover:opacity-100" />
 
                             <div className="space-y-5">
-                                <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/15">
-                                    <img
+                                <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/15 relative">
+                                    <Image
                                         src={feature.image}
                                         alt={feature.title}
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        className="object-cover"
                                     />
                                 </div>
                                 <h3 className="text-foreground font-serif text-xl group-hover:text-primary transition-colors duration-300">

@@ -1,5 +1,6 @@
 import { urlFor } from "@/lib/sanity";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Post {
     _id: string;
@@ -40,11 +41,12 @@ export default function ZodiacHubArticles({ posts, signName }: ZodiacHubArticles
                         >
                             <article className="h-full flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md">
                                 {post.mainImage?.asset ? (
-                                    <div className="aspect-[16/9] overflow-hidden">
-                                        <img
+                                    <div className="aspect-[16/9] overflow-hidden relative">
+                                        <Image
                                             src={urlFor(post.mainImage).width(600).height(340).auto("format").url()}
                                             alt={post.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                                            fill
+                                            className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
                                         />
                                     </div>
                                 ) : (

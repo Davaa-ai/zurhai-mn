@@ -34,7 +34,7 @@ interface Post {
     title: string;
     slug: { current: string };
     excerpt?: string;
-    mainImage?: any;
+    mainImage?: { asset?: unknown };
     publishedAt?: string;
     categories?: string[];
 }
@@ -83,7 +83,7 @@ export default async function EasternHubPage({ params }: PageProps) {
     };
 
     // Fetch related blog posts
-    const relatedPosts: Post[] = await client.fetch(relatedPostsByTagQuery, { tag: profile.animalName } as any) as Post[];
+    const relatedPosts: Post[] = await client.fetch<Post[]>(relatedPostsByTagQuery, { tag: profile.animalName } as Record<string, unknown>);
 
     // Get sibling animals for prev/next nav
     const siblings = getSiblings(slug, EASTERN_SIGN_ORDER);

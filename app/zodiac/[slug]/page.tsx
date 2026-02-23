@@ -36,7 +36,7 @@ interface Post {
     title: string;
     slug: { current: string };
     excerpt?: string;
-    mainImage?: any;
+    mainImage?: { asset?: unknown };
     publishedAt?: string;
     categories?: string[];
 }
@@ -85,7 +85,7 @@ export default async function ZodiacHubPage({ params }: PageProps) {
     };
 
     // Fetch related blog posts
-    const relatedPosts: Post[] = await client.fetch(relatedPostsByTagQuery, { tag: profile.signName } as any) as Post[];
+    const relatedPosts: Post[] = await client.fetch<Post[]>(relatedPostsByTagQuery, { tag: profile.signName } as Record<string, unknown>);
 
     // Get sibling signs for prev/next nav
     const siblings = getSiblings(slug, WESTERN_SIGN_ORDER);

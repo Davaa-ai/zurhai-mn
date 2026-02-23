@@ -5,7 +5,6 @@ import { X, Sparkles, ArrowRight } from "lucide-react";
 import { ZODIAC_SIGNS, ZodiacSign } from "@/lib/zodiac-data";
 import { WESTERN_ZODIAC, EXPLORE_CATEGORIES, WesternSign } from "@/lib/categories-data";
 import { cn } from "@/lib/utils";
-import { TarotCard } from "@/components/ui/tarot-card";
 
 export default function CategoriesSection() {
     const [selectedSign, setSelectedSign] = useState<ZodiacSign | WesternSign | null>(null);

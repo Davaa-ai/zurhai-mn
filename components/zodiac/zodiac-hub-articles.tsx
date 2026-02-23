@@ -7,7 +7,7 @@ interface Post {
     title: string;
     slug: { current: string };
     excerpt?: string;
-    mainImage?: any;
+    mainImage?: { asset?: unknown };
     publishedAt?: string;
     categories?: string[];
 }
